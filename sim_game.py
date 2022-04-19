@@ -105,17 +105,30 @@ def rules():
 
 
 def game_loop():
+    red_list = []
+    blue_list = []
+    player_list = []
     player1 = rules()
     clock.tick(10)
     playing = True
+    game = False
     user_text = ''
     while playing:
+        while game:
+            disp.fill(0)
+            message(player + 'lost the game!', color)
+            pygame.display.flip()
+
         input_rect = pygame.Rect(800, 150, 50, 40)
         if player1 == 'a':
             p1 = random.randint(0, 5)
             p2 = random.randint(0, 5)
-            if [point_arr[p1], point_arr[p2]] not in lines_list:
-                lines_list.append([point_arr[p1], point_arr[p2], blue])
+            palist = [p1, p2]
+            palist.sort()
+            if ([point_arr[palist[0]], point_arr[palist[1]], red] not in lines_list) and ([point_arr[palist[0]], point_arr[palist[1]], blue] not in lines_list):
+                lines_list.append([point_arr[palist[0]], point_arr[palist[1]], blue])
+                blue_list.append(palist)
+                player_list = blue_list
                 player1 = 'b'
         else:
             for event in pygame.event.get():
@@ -130,10 +143,14 @@ def game_loop():
                         point = user_text.split(';')
                         p1 = int(point[0])
                         p2 = int(point[1])
-                        if [point_arr[p1], point_arr[p2]] in lines_list:
+                        plist = [p1, p2]
+                        plist.sort()
+                        if ([point_arr[plist[0]], point_arr[plist[1]], red] in lines_list) or ([point_arr[plist[0]], point_arr[plist[1]], blue] in lines_list):
                             message('Line already exists!', red)
                         else:
-                            lines_list.append([point_arr[p1], point_arr[p2], red])
+                            lines_list.append([point_arr[plist[0]], point_arr[plist[1]], red])
+                            red_list.append(plist)
+                            player_list = red_list
                             player1 = 'a'
                             user_text = ''
                     else:
@@ -148,6 +165,21 @@ def game_loop():
         lenght = len(lines_list)
         disp.fill(black)
         lines(lines_list, lenght)
+
+        for i in range(len(player_list)):
+            for j in range(len(player_list)):
+                if player_list[i][0] == player_list[j][0]:
+                    for n in range(len(player_list)):
+                        if player_list[n][0] == player_list[i][1] and player_list[n][1] == player_list[j][1]:
+                            if lines_list[lenght-1][2] == red:
+                                player = 'You '
+                                color = red
+                            else:
+                                player = 'Computer '
+                                color = green
+                            game = True
+
+
         make_game_field()
         points()
 
