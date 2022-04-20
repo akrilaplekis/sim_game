@@ -50,12 +50,33 @@ def points():
 
 def message(msg, color):
     mesg = word_font.render(msg, True, color)
-    disp.blit(mesg, [display_w / 5, display_h / 5])
+    disp.blit(mesg, [650, 500])
 
 
 def lines(plines, lenght):
     for i in range(lenght):
         pygame.draw.line(disp, plines[i][2], plines[i][0], plines[i][1], 3)
+
+
+def check_game(player_list):
+    play = False
+    print(player_list)
+    pl_len = len(player_list)
+    for i in range(pl_len):
+        for j in range(pl_len):
+            if i != j:
+                if player_list[i][0] == player_list[j][0]:
+                    for n in range(pl_len):
+                        if (player_list[n][0] == player_list[i][1] and player_list[n][1] ==
+                            player_list[j][1]) or (
+                            player_list[n][1] == player_list[i][1] and player_list[n][0] ==
+                                player_list[j][1]):
+                            print('got match 2')
+                            if lines_list[n][2] == lines_list[i][2] == lines_list[j][2]:
+                                print('losing broke')
+                                print(player_list)
+                            play = True
+    return play
 
 
 def rules():
@@ -107,54 +128,68 @@ def rules():
 def game_loop():
     red_list = []
     blue_list = []
-    player_list = []
     player1 = rules()
     clock.tick(10)
     playing = True
     game = False
+    game_play = False
     user_text = ''
     while playing:
         while game:
-            disp.fill(0)
-            message(player + 'lost the game!', color)
-            pygame.display.flip()
+            if player1 == 'a':
+                message('You lost the game! To play again press "p"', red)
+            else:
+                message('You won the game! To play again press "p"', green)
+            lines_list.clear()
+            pygame.display.update()
 
-        input_rect = pygame.Rect(800, 150, 50, 40)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:
+                        game_loop()
+
         if player1 == 'a':
             p1 = random.randint(0, 5)
             p2 = random.randint(0, 5)
+            while p2 == p1:
+                p1 = random.randint(0, 5)
+                p2 = random.randint(0, 5)
             palist = [p1, p2]
             palist.sort()
             if ([point_arr[palist[0]], point_arr[palist[1]], red] not in lines_list) and ([point_arr[palist[0]], point_arr[palist[1]], blue] not in lines_list):
                 lines_list.append([point_arr[palist[0]], point_arr[palist[1]], blue])
                 blue_list.append(palist)
-                player_list = blue_list
+                game_play = check_game(blue_list)
                 player1 = 'b'
-        else:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
 
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_BACKSPACE:
-                        user_text = user_text[:-1]
-                    elif event.key == pygame.K_RETURN:
-                        point = user_text.split(';')
-                        p1 = int(point[0])
-                        p2 = int(point[1])
-                        plist = [p1, p2]
-                        plist.sort()
-                        if ([point_arr[plist[0]], point_arr[plist[1]], red] in lines_list) or ([point_arr[plist[0]], point_arr[plist[1]], blue] in lines_list):
-                            message('Line already exists!', red)
-                        else:
-                            lines_list.append([point_arr[plist[0]], point_arr[plist[1]], red])
-                            red_list.append(plist)
-                            player_list = red_list
-                            player1 = 'a'
-                            user_text = ''
+        input_rect = pygame.Rect(800, 150, 50, 40)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_BACKSPACE:
+                    user_text = user_text[:-1]
+                elif event.key == pygame.K_RETURN:
+                    point = user_text.split(';')
+                    p1 = int(point[0])
+                    p2 = int(point[1])
+                    plist = [p1, p2]
+                    plist.sort()
+                    if ([point_arr[plist[0]], point_arr[plist[1]], red] in lines_list) or ([point_arr[plist[0]], point_arr[plist[1]], blue] in lines_list):
+                        message('Line already exists!', red)
+                        pygame.display.update()
                     else:
-                        user_text += event.unicode
+                        lines_list.append([point_arr[plist[0]], point_arr[plist[1]], red])
+                        red_list.append(plist)
+                        game_play = check_game(red_list)
+                        player1 = 'a'
+                        user_text = ''
+                else:
+                    user_text += event.unicode
 
         pygame.draw.rect(disp, blue, input_rect)
         text_surface = word_font.render(user_text, True, (255, 255, 255))
@@ -166,24 +201,14 @@ def game_loop():
         disp.fill(black)
         lines(lines_list, lenght)
 
-        for i in range(len(player_list)):
-            for j in range(len(player_list)):
-                if player_list[i][0] == player_list[j][0]:
-                    for n in range(len(player_list)):
-                        if player_list[n][0] == player_list[i][1] and player_list[n][1] == player_list[j][1]:
-                            if lines_list[lenght-1][2] == red:
-                                player = 'You '
-                                color = red
-                            else:
-                                player = 'Computer '
-                                color = green
-                            game = True
-
+        if game_play:
+            game = True
 
         make_game_field()
         points()
 
     pygame.quit()
+    quit()
 
 
 game_loop()
