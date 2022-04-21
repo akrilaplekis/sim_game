@@ -9,7 +9,6 @@ black = (0, 0, 0)
 red = (255, 00, 80)
 green = (0, 255, 0)
 blue = (0, 0, 255)
-gray = (211, 211, 211)
 
 word_font = pygame.font.SysFont("comicsansms", 20)
 
@@ -50,7 +49,7 @@ def points():
 
 def message(msg, color):
     mesg = word_font.render(msg, True, color)
-    disp.blit(mesg, [650, 500])
+    disp.blit(mesg, [700, 500])
 
 
 def lines(plines, lenght):
@@ -60,7 +59,6 @@ def lines(plines, lenght):
 
 def check_game(player_list):
     play = False
-    print(player_list)
     pl_len = len(player_list)
     for i in range(pl_len):
         for j in range(pl_len):
@@ -71,18 +69,33 @@ def check_game(player_list):
                             player_list[j][1]) or (
                             player_list[n][1] == player_list[i][1] and player_list[n][0] ==
                                 player_list[j][1]):
-                            print('got match 2')
-                            if lines_list[n][2] == lines_list[i][2] == lines_list[j][2]:
-                                print('losing broke')
-                                print(player_list)
                             play = True
+    return play
+
+
+def check_blue(player_list):
+    play = -1
+    pl_len = len(player_list)
+    for i in range(pl_len):
+        for j in range(pl_len):
+            if i != j:
+                if player_list[i][0] == player_list[j][0]:
+                    for n in range(pl_len):
+                        if (player_list[n][0] == player_list[i][1] and player_list[n][1] ==
+                            player_list[j][1]) or (
+                            player_list[n][1] == player_list[i][1] and player_list[n][0] ==
+                                player_list[j][1]):
+                            play = -1
+                        else:
+                            play = 0
+
     return play
 
 
 def rules():
     active = False
     user_text = ''
-    input_rect = pygame.Rect(500, 310, 50, 40)
+    input_rect = pygame.Rect(500, 400, 50, 40)
     while not active:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -106,6 +119,7 @@ def rules():
                 'is to not make a triangle using only one players lines. Meaning the player who',
                 'creates a triangle first or has no more moves left which do not make a trinagle',
                 'loses the game.',
+                'Be careful with your inputs, game does not have good error handling!',
                 'To choose who begins the game input "a" for computer or "b" for yourself',
                 'Press enter to play']
         label = []
@@ -128,6 +142,7 @@ def rules():
 def game_loop():
     red_list = []
     blue_list = []
+    blue_try = []
     player1 = rules()
     clock.tick(10)
     playing = True
@@ -152,13 +167,18 @@ def game_loop():
                         game_loop()
 
         if player1 == 'a':
-            p1 = random.randint(0, 5)
-            p2 = random.randint(0, 5)
-            while p2 == p1:
+            rez = -1
+            while rez == -1:
                 p1 = random.randint(0, 5)
                 p2 = random.randint(0, 5)
-            palist = [p1, p2]
-            palist.sort()
+                while p2 == p1:
+                    p1 = random.randint(0, 5)
+                    p2 = random.randint(0, 5)
+                palist_try = [p1, p2]
+                palist_try.sort()
+                blue_try.append(palist_try)
+                rez = check_blue(blue_try)
+            palist = palist_try
             if ([point_arr[palist[0]], point_arr[palist[1]], red] not in lines_list) and ([point_arr[palist[0]], point_arr[palist[1]], blue] not in lines_list):
                 lines_list.append([point_arr[palist[0]], point_arr[palist[1]], blue])
                 blue_list.append(palist)
@@ -180,8 +200,9 @@ def game_loop():
                     plist = [p1, p2]
                     plist.sort()
                     if ([point_arr[plist[0]], point_arr[plist[1]], red] in lines_list) or ([point_arr[plist[0]], point_arr[plist[1]], blue] in lines_list):
-                        message('Line already exists!', red)
-                        pygame.display.update()
+                        for i in range(900):
+                            message('Line already exists!', red)
+                            pygame.display.update()
                     else:
                         lines_list.append([point_arr[plist[0]], point_arr[plist[1]], red])
                         red_list.append(plist)
