@@ -3,6 +3,7 @@ import sys
 import random
 pygame.init()
 
+# krāsu un fonta iestatīšana
 white = (255, 255, 255)
 yellow = (255, 255, 102)
 black = (0, 0, 0)
@@ -12,9 +13,11 @@ blue = (0, 0, 255)
 
 word_font = pygame.font.SysFont("comicsansms", 20)
 
+# ekrāna izmēri
 display_w = 1200
 display_h = 700
 
+# sešstūra punktu koordinātes
 x1 = 450
 x2 = 675
 x3 = 225
@@ -24,14 +27,17 @@ y3 = 425
 y4 = 550
 
 point_arr = [[x1, y1], [x2, y2], [x2, y3], [x1, y4], [x3, y3], [x3, y2]]
+
+# saraksts, kurā glabās uzzīmētās līnijas
 lines_list = []
 
+# spēles logs disp
 disp = pygame.display.set_mode((display_w, display_h))
 pygame.display.set_caption('SIM Game by 201RDB138')
 
 clock = pygame.time.Clock()
 
-
+# funkcija, kas izviento punktus uz ekrāna un tekstu par līnijas ievadi
 def make_game_field():
     for i in range(6):
         pygame.draw.circle(disp, red, point_arr[i], 5)
@@ -40,39 +46,39 @@ def make_game_field():
     mesg = word_font.render(title, True, red)
     disp.blit(mesg, [800, 100])
 
-
+# funkcija, kas pievieno punktiem to kārtas ciparu
 def points():
     for i in range(6):
         value = word_font.render(str(i), True, white)
         disp.blit(value, point_arr[i])
 
-
+# palīgfunkcija teksta izvadei
 def message(msg, color):
     mesg = word_font.render(msg, True, color)
     disp.blit(mesg, [700, 500])
 
-
+# funkcija, kas uz ekrāna izvada uzzīmētās līnijas
 def lines(plines, lenght):
     for i in range(lenght):
         pygame.draw.line(disp, plines[i][2], plines[i][0], plines[i][1], 3)
 
-
+# funkcija, kas pārbauda, vai spēli ir zaudējis kāds no spēletājiem
 def check_game(player_list):
-    play = False
+    play = False #vērtība, kas norādā spēles statusu
     pl_len = len(player_list)
     for i in range(pl_len):
         for j in range(pl_len):
             if i != j:
-                if player_list[i][0] == player_list[j][0]:
+                if player_list[i][0] == player_list[j][0]: # parbauda vai sakrīt jebkuras 2 spēlētāja līnijas
                     for n in range(pl_len):
                         if (player_list[n][0] == player_list[i][1] and player_list[n][1] ==
                             player_list[j][1]) or (
                             player_list[n][1] == player_list[i][1] and player_list[n][0] ==
-                                player_list[j][1]):
+                                player_list[j][1]): # pārbauda vai veidojās trijstūris
                             play = True
     return play
 
-
+# funkcija pārbauda datora gājienu
 def check_blue(player_list):
     play = -1
     pl_len = len(player_list)
@@ -91,7 +97,7 @@ def check_blue(player_list):
 
     return play
 
-
+# funkcija, kas izveido pirmo logu ar noteikumiem un spēlētāja, kas uzsāks spēli izvēli
 def rules():
     active = False
     user_text = ''
@@ -149,7 +155,9 @@ def game_loop():
     game = False
     game_play = False
     user_text = ''
+    # spēles aktīvais ekrāns
     while playing:
+        # spēles zaudēšanas logs
         while game:
             if player1 == 'a':
                 message('You lost the game! To play again press "p"', red)
@@ -166,6 +174,7 @@ def game_loop():
                     if event.key == pygame.K_p:
                         game_loop()
 
+        # datora gājieni
         if player1 == 'a':
             rez = -1
             while rez == -1:
@@ -190,6 +199,7 @@ def game_loop():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            # spēlētāja(cilvēka) gājieni
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_BACKSPACE:
                     user_text = user_text[:-1]
@@ -211,7 +221,7 @@ def game_loop():
                         user_text = ''
                 else:
                     user_text += event.unicode
-
+# teksta ievade
         pygame.draw.rect(disp, blue, input_rect)
         text_surface = word_font.render(user_text, True, (255, 255, 255))
         disp.blit(text_surface, (input_rect.x + 5, input_rect.y + 5))
@@ -221,10 +231,10 @@ def game_loop():
         lenght = len(lines_list)
         disp.fill(black)
         lines(lines_list, lenght)
-
+# spēles beigas
         if game_play:
             game = True
-
+# spēles lauks
         make_game_field()
         points()
 
